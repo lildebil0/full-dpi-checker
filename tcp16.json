@@ -54,6 +54,10 @@
 
     {"id": "FST-01", "asn": "54113", "provider": "Fastly", "ip": "151.101.66.245", "port": 443, "sni": "www.jetblue.com"},
     {"id": "FST-02", "asn": "54113", "provider": "Fastly", "ip": "151.101.194.114", "port": 443, "sni": "ssl.p.jwpcdn.com"},
+    {"id": "FST-03", "asn": "54113", "provider": "Fastly GitHub 108", "ip": "185.199.108.133", "port": 443, "sni": "release-assets.githubusercontent.com"},
+    {"id": "FST-04", "asn": "54113", "provider": "Fastly GitHub 109", "ip": "185.199.109.133", "port": 443, "sni": "release-assets.githubusercontent.com"},
+    {"id": "FST-05", "asn": "54113", "provider": "Fastly GitHub 110", "ip": "185.199.110.133", "port": 443, "sni": "release-assets.githubusercontent.com"},
+    {"id": "FST-06", "asn": "54113", "provider": "Fastly GitHub 111", "ip": "185.199.111.133", "port": 443, "sni": "release-assets.githubusercontent.com"},
 
     {"id": "GC-01", "asn": "396982", "provider": "Google Cloud", "ip": "147.189.239.240", "port": 443},
     {"id": "GC-02", "asn": "396982", "provider": "Google Cloud", "ip": "35.227.66.60", "port": 443},
@@ -132,5 +136,5 @@
     {"id": "CN-01", "asn": "51765", "provider": "CreaNova", "ip": "185.212.149.82", "port": 443},
 
     {"id": "SCA-01", "asn": "58061", "provider": "Scalaxy", "ip": "5.61.55.146", "port": 443},
-    {"id": "FRX-01", "asn": "48040", "provider": "Fornex", "ip": "199.68.199.16", "port": 443, "sni": "h2t.toppayplay.fun"}
+    {"id": "FRX-01", "asn": "48040", "provider": "Fornex", "ip": "199.68.199.16", "port": 443}
 ]
