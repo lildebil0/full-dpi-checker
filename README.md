@@ -1,205 +1,140 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Runnin4ik/dpi-detector/main/images/logo.jpg" width="100%">
-  <br>
   <i>«Маяк у гаснущего горизонта свободного интернета»</i><br>
-  Сквозь цифровые сумерки. Смотритель маяка, <a href="https://github.com/Runnin4ik"><b>Runni</b></a>
+  Форк <a href="https://github.com/Runnin4ik/dpi-detector"><b>Runni/dpi-detector</b></a> с упором на AI-сервисы и интеграцию с zapret2.
 </p>
 
-# 🔍 DPI Detector
+# 🔍 Full DPI Checker
+
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Docker](https://img.shields.io/badge/docker-ready-brightgreen.svg)](https://github.com/Runnin4ik/dpi-detector/pkgs/container/dpi-detector)
+[![Upstream](https://img.shields.io/badge/upstream-Runnin4ik%2Fdpi--detector-lightgrey)](https://github.com/Runnin4ik/dpi-detector)
 
-Инструмент для анализа цензуры трафика в России: обнаруживает и классифицирует блокировки сайтов, хостингов и CDN (TCP16-20 блокировки), а также подмену DNS-запросов провайдером.
+Инструмент для анализа цензуры трафика — обнаруживает и классифицирует блокировки сайтов, AI-сервисов, хостингов и CDN (TCP 16-20KB), подмену DNS-запросов провайдером, **и автоматически предлагает обходные стратегии через [zapret2](https://github.com/bol-van/zapret2)**.
 
 > <b>Инструмент был полезен? Поставь ⭐ в качестве «спасибо»!</b>
 
-![Пример результатов](https://raw.githubusercontent.com/Runnin4ik/dpi-detector/main/images/screenshot.png)
+## 🆕 Что добавил форк
 
-## 🎯 Возможности
+| Фича | Описание |
+|---|---|
+| **🤖 Тест 8 — AI/LLM сервисы** | Куратированный список из ~70 нейросетей: Claude, ChatGPT, Gemini, Copilot, Grok, DeepSeek, Mistral, Cohere, Perplexity, Cursor, OpenRouter, HuggingFace, Replicate, ElevenLabs, Midjourney и др. |
+| **🛡️ zapret2 suggester** | После обнаружения блоков выводит конкретные команды для bypass-проверки с 5 готовыми DPI-стратегиями (split2, fakedsplit, disorder2, multidisorder и др.) |
+| **📜 `--gen-zapret`** | Генерирует `zapret2_test.bat` (Windows) или `zapret2_test.sh` (Linux), который перебирает стратегии против заблокированных доменов |
+| **🎯 IP-vs-DPI классификация** | Разделяет блоки на bypassable через zapret2 vs IP-level (требуют VPN) — не тратит время на безнадёжные стратегии |
 
-- **🤖 AI / LLM сервисы (тест 8 — новое в форке `lildebil0/dpi-detector`)** — проверка доступности Claude / ChatGPT / Gemini / Copilot / Grok / DeepSeek / Mistral / Cohere / Perplexity / Cursor / OpenRouter / HuggingFace / Replicate / ElevenLabs / Midjourney и др. (~70 доменов в `domains_ai.txt`). Запуск: `python dpi_detector.py -t 8` или `python dpi_detector.py -t 18` (DNS + AI).
-- **TCP 16-20KB блокировка** — обнаруживает обрыв соединения к CDN и хостингам после передачи 14-34KB
+## 🎯 Все возможности
+
+- **🤖 AI/LLM проверка** (новое) — все основные нейросетевые сервисы одной командой
+- **🛡️ zapret2 интеграция** (новое) — после теста: классификация + готовые bypass-команды + генератор скрипта
+- **TCP 16-20KB блокировка** — обрыв соединения после 14-34KB (типично для CDN)
 - **Подбор белых SNI для AS хостингов/CDN**
-- **Проверка доступности заблокированных сайтов** — тестирует TLS 1.2, TLS 1.3 и HTTP
-- **Проверка DNS** — выявляет перехват UDP/53, подмену IP-адресов заглушками и блокировку DoH
-- **Классификация ошибок** — различает TCP RST, Connection Abort,
-  Handshake/Read Timeout, TLS MITM, SNI-блокировку и другие
-- **Гибкая настройка** — таймауты, потоки, свои списки доменов, DNS-серверы
-  и IPv4-only режим
+- **Проверка доступности сайтов** — TLS 1.2, TLS 1.3, HTTP
+- **Проверка DNS** — UDP/53 перехват, IP-подмена, блокировка DoH
+- **Классификация ошибок** — TCP RST, Abort, Handshake/Read Timeout, TLS MITM, SNI-блок
+- **Telegram замедление/блокировка**
+- **Гибкая настройка** — таймауты, потоки, свои списки доменов
 
-## 🤖 AI / LLM проверка — fork-specific
+> [!WARNING]
+> Если у вас запущены средства обхода блокировок (zapret/GoodbyeDPI), результаты будут искажены. Выключите их или переведите в режим ALL.
 
-Forк `lildebil0/dpi-detector` добавляет **тест 8** — куратированный список AI-сервисов
-для быстрой проверки, какие нейросети блокируются твоим провайдером.
+## 🚀 Быстрый старт
 
 ```bash
-# только AI проверка
+# Установка
+git clone https://github.com/lildebil0/full-dpi-checker.git
+cd full-dpi-checker
+python -m pip install -r requirements.txt
+
+# Запуск меню
+python dpi_detector.py
+
+# Только AI-сервисы
 python dpi_detector.py -t 8
 
-# DNS + AI (типичный flow для диагностики)
-python dpi_detector.py -t 18
+# DNS + AI + сразу сгенерировать zapret2 тестер
+python dpi_detector.py -t 18 --gen-zapret
 
-# полный набор включая AI
-python dpi_detector.py -t 12348
+# Через прокси (если основной канал блокирует)
+python dpi_detector.py -t 8 -p socks5://127.0.0.1:1080
 ```
 
-**Что входит в `domains_ai.txt`:**
+## 🤖 Тест 8 — что внутри `domains_ai.txt`
 
-| Категория | Сервисы |
+| Категория | Примеры |
 |---|---|
-| LLM chat | Claude, ChatGPT, Gemini, Copilot, Grok, DeepSeek, Mistral, Cohere, Perplexity |
-| AI-coding | Cursor, Windsurf, Codeium, GitHub Copilot |
-| Inference providers | OpenRouter, Groq, Together, Fireworks, Replicate |
-| Open hubs | HuggingFace, Ollama, ModelScope |
-| Image/video/voice | Midjourney, Runway, Stability, ElevenLabs, Deepgram |
-| Vector DB | Pinecone, Qdrant, Weaviate |
+| **LLM chat** | Claude, ChatGPT, Gemini, Copilot, Grok, DeepSeek, Mistral, Cohere, Perplexity |
+| **AI-coding** | Cursor, Windsurf, Codeium, GitHub Copilot |
+| **Inference providers** | OpenRouter, Groq, Together, Fireworks, Replicate |
+| **Open hubs** | HuggingFace, Ollama, ModelScope |
+| **Image/video/voice** | Midjourney, Runway, Stability, ElevenLabs, Deepgram |
+| **Vector DBs** | Pinecone, Qdrant, Weaviate |
 
-Свои домены можно добавить — просто отредактируй `domains_ai.txt`, формат
-такой же как у обычного `domains.txt`.
+Редактируй `domains_ai.txt` чтобы добавить свои сервисы — формат как у обычного `domains.txt`.
 
-> [!WARNING]  
-> Если у вас запущены средства обхода блокировок (например, zapret или GoodbyeDPI), результаты тестов будут искажены. Чтобы узнать реальное состояние фильтров вашего провайдера, выключите их перед началом проверки или убедитесь, что они работают в режиме обработки всех пакетов (режим ALL), а не только по списку.
+## 🛡️ zapret2 интеграция — как работает
 
-### ⚙️ Кастомизация
-Следующие файлы могут быть переопределены. Инструкции ниже.
+После теста, если найдены блокировки:
 
-1.  `domains.txt` — список доменов для проверки.
-2.  `tcp16.json` — цели для теста TCP 16-20KB.
-3.  `config.yml` — конфигурация.
-4.  `whitelist_sni.txt` — список белых SNI для подбора рабочих
+1. **Классификация:** скрипт разделяет блокированные домены на 2 группы:
+   - 🟢 **zapret2-bypassable** — TLS DPI, SNI block, TCP RST mid-stream, 16-20KB drop
+   - 🔴 **IP-level** — TCP TIMEOUT к direct IP, DNS-hijack — нужен VPN, zapret2 не поможет
+2. **Предложение стратегий:** показывает 5 winws.exe / nfqws команд от простой к агрессивной:
+   - `split2-md5sig` — простейший
+   - `fake-split2-ttl` — против active probe DPI
+   - `fakedsplit` — против strict SNI-парсера
+   - `disorder2-md5sig` — обходит TCP-reassembly DPI
+   - `multidisorder-badseq` — самый агрессивный
+3. **Генерация тестера** (`--gen-zapret`): создаёт `zapret2_test.bat` (Windows) или `zapret2_test.sh` (Linux), который автоматически перебирает все 5 стратегий против заблокированных доменов.
 
-### ⚙️ Запуск с параметрами (CLI)
+**Использование сгенерированного скрипта:**
 
-| Параметр              | Описание                                                            | Пример использования         |
-|:----------------------|:--------------------------------------------------------------------|:-----------------------------|
-| `-t`, `--tests`       | Указать номера тестов (без меню).                                   | `-t 123` или `-t 4`          |
-| `-p`, `--proxy`       | Использовать прокси (переопределяет `PROXY_URL`).                   | `-p socks5://127.0.0.1:1080` |
-| `-d`, `--domain`      | Проверка отдельных доменов. Игнорирует `domains.txt`                | `-d vk.com -d youtube.com`   |
-| `-c`, `--concurrency` | Количество конкурентных запросов (переопределяет `MAX_CONCURRENT`). | `-c 50`                      |
-| `-o`, `--output`      | Автоматически сохранить лог в указанный файл.                       | `-o report_log.txt`          |
-| `--batch`             | Отключает все вопросы и паузы в консоли.                            | `--batch`                    |
-
-## 🐋 Docker (Рекомендовано)
-
-### Быстрый старт
-Docker проверит наличие обновлений и скачает свежую версию перед запуском
 ```bash
-docker run --rm -it --pull=always ghcr.io/runnin4ik/dpi-detector:latest
-```
-Или запускайте с указанием определенной версии  
-Это избавляет от постоянных скачиваний, но нужно следить за актуальностью версий
-```bash
-docker run --rm -it ghcr.io/runnin4ik/dpi-detector:3.3.0
+# 1. Скачай zapret2: https://github.com/bol-van/zapret2/releases/latest
+# 2. Положи winws.exe (Windows) или nfqws (Linux) рядом со скриптом
+# 3. Запусти
+./zapret2_test.sh    # Linux (с sudo для nfqws + iptables)
+zapret2_test.bat     # Windows (Admin)
 ```
 
-#### С кастомизацией
-Переопределите нужные файлы: `domains.txt`, `tcp16.json`...
-Запустите с монтированием (можно монтировать один или несколько файлов)
-```bash
-# Bash (Linux / macOS)
-docker run --rm -it --pull=always \
-  -v $(pwd)/domains.txt:/app/domains.txt \
-  -v $(pwd)/tcp16.json:/app/tcp16.json \
-  -v $(pwd)/config.yml:/app/config.yml \
-  -v $(pwd)/whitelist_sni.txt:/app/whitelist_sni.txt \
-  ghcr.io/runnin4ik/dpi-detector:latest -t 123 -d discord.com
+В соседнем терминале проверяй: `curl -v https://api.anthropic.com` — какая стратегия позволила connect-нуться без RST, та и работает у твоего провайдера.
+
+## ⚙️ Кастомизация
+
+Файлы можно переопределить, положив свою версию рядом с программой:
+
+1. `domains.txt` — обычные домены (тест 3)
+2. `domains_ai.txt` — **AI-сервисы (тест 8, новое)**
+3. `tcp16.json` — цели для TCP 16-20KB
+4. `whitelist_sni.txt` — белые SNI
+5. `config.yml` — таймауты, MAX_CONCURRENT, прокси
+
+## 📋 Меню тестов
+
 ```
-<details>
-<summary>Команды для PowerShell и CMD</summary>
-
-PowerShell (Windows)
-```bash
-docker run --rm -it --pull=always `
-  -v ${PWD}/domains.txt:/app/domains.txt `
-  -v ${PWD}/tcp16.json:/app/tcp16.json `
-  -v ${PWD}/config.yml:/app/config.yml `
-  -v ${PWD}/whitelist_sni.txt:/app/whitelist_sni.txt `
-  ghcr.io/runnin4ik/dpi-detector:latest
-```
-
-CMD (Windows)
-```bash
-docker run --rm -it --pull=always ^
-  -v %cd%/domains.txt:/app/domains.txt ^
-  -v %cd%/tcp16.json:/app/tcp16.json ^
-  -v %cd%/config.yml:/app/config.yml ^
-  -v %cd%/whitelist_sni.txt:/app/whitelist_sni.txt ^
-  ghcr.io/runnin4ik/dpi-detector:latest
-```
-</details>
-
-## 🐍 Python 3.8+
-**Требования:** httpx[socks,http2]>=0.28.1, rich>=14.3.2, PyYAML>=6.0.3
-
-**Установка:**
-```bash
-# скачайте и распакуйте архив руками, или:
-git clone https://github.com/Runnin4ik/dpi-detector.git
-cd dpi-detector
-python -m pip install -r requirements.txt
+1  — Подмена DNS
+2  — Доступность DNS-серверов
+3  — Доступность обычных доменов
+4  — TCP 16-20KB блокировка
+5  — Белые SNI для ASN
+6  — Telegram (замедление/блокировка)
+7  — Легенда статусов
+8  — AI/LLM сервисы (Claude/ChatGPT/Gemini/Copilot/Grok/DeepSeek/...)
 ```
 
-**Запуск:**
-```bash
-python dpi_detector.py
-# или с параметрами
-python dpi_detector.py -t 2 -d discord.com -p socks5://127.0.0.1:1080
-```
+Можно комбинировать: `-t 138` = DNS + домены + AI.
 
-## 🪟 Windows (Готовые сборки)
+## 🔗 Связанные проекты
 
-Для использования программы не обязательно устанавливать Python. Скачайте подходящий `.exe` файл в разделе [Releases -> Assets](https://github.com/Runnin4ik/dpi-detector/releases):
+- [bol-van/zapret2](https://github.com/bol-van/zapret2) — DPI bypass tool, для которого этот checker генерирует стратегии
+- [Runnin4ik/dpi-detector](https://github.com/Runnin4ik/dpi-detector) — оригинальный upstream
+- [GoodbyeDPI](https://github.com/ValdikSS/GoodbyeDPI) — альтернативный bypass-tool
 
-*   **[Скачать для Windows 10 / 11](https://github.com/Runnin4ik/dpi-detector/releases/download/v3.3.0/dpi_detector_v3.3.0_win10.exe)**
-*   **[Скачать для Windows 7 / 8](https://github.com/Runnin4ik/dpi-detector/releases/download/v3.3.0/dpi_detector_v3.3.0_win7.exe)**
+## 📄 Лицензия
 
-#### С кастомизацией
+MIT (наследовано от upstream).
 
-Переопределите нужные файлы: `domains.txt`, `tcp16.json`, `config.yml`, `whitelist_sni.txt`
-И положите их в папку рядом с `.exe` файлом.
+---
 
-## 🤝 Вклад в проект
-Приветствуются Issue и Pull Request'ы и предложения функционала!
-
-## 📜 Лицензия
-
-[MIT License](LICENSE) — свободное использование, модификация и распространение.
-
-## ⚠️ Дисклеймер
-
-Этот инструмент предназначен исключительно для образовательных и диагностических целей. Автор не несет ответственности за использование данного ПО.
-
-## 🙏 Благодарности
-
-- Проекту [hyperion-cs/dpi-checkers](https://github.com/hyperion-cs/dpi-checkers) за вдохновение
-- **0ka** за помощь и консультации
-
-## 👀Похожие проекты
-Советуем также взглянуть:
-- [hyperion-cs/dpi-ch](https://github.com/hyperion-cs/dpi-checkers/tree/main/ru/dpi-ch) — _DPI comprehensive checker (go)_
-
-## 💖 Поддержка проекта
-
-### [Картой или по СБП](https://pay.cloudtips.ru/p/1421d4c7)
-
-| Валюта   | Сеть   | Адрес                                              |
-|----------|--------|----------------------------------------------------|
-| **USDT** | TRC20  | `TGtcb4JMT5F3KiEL16oZnj9ijB2Pag1jCX`               |
-| **USDT** | ERC20  | `0x97413028546b5da4cbba4d9838c9d635a5333ab1`       |
-| **USDT** | TON    | `UQApgV57_p0hQGBV9oxrDi7SvKqgN3pigw5YEA28VShrZ7X_` |
-| **TON**  |        | `UQApgV57_p0hQGBV9oxrDi7SvKqgN3pigw5YEA28VShrZ7X_` |
-| **BNB**  | BEP-20 | `0x97413028546b5da4cbba4d9838c9d635a5333ab1`       |
-| **SOL**  |        | `9obMiD8hYfs4D8XskQjHPPtAKYPq9CaEZTbBMxtCjQ3k`     |
-| **BTC**  |        | `bc1q7579xpmxcrz34lzmrxfupkpcczvemeqk2e9f4h`       |
-| **ETH**  |        | `0x97413028546b5da4cbba4d9838c9d635a5333ab1`       |
-
-## Star History
-
-<a href="https://www.star-history.com/#Runnin4ik/dpi-detector&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Runnin4ik/dpi-detector&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Runnin4ik/dpi-detector&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Runnin4ik/dpi-detector&type=date&legend=top-left" />
- </picture>
-</a>
+<p align="center">
+  <sub>Fork by <a href="https://github.com/lildebil0">lildebil0</a> · Upstream by <a href="https://github.com/Runnin4ik">Runni</a></sub>
+</p>

@@ -30,8 +30,8 @@ from core.dns_scanner import (
 from utils.files import load_domains, load_tcp_targets, load_whitelist_sni, load_ai_domains, get_base_dir
 from utils.zapret_suggester import classify_block_severity, render_suggestion, generate_test_script
 
-CURRENT_VERSION = "3.3.0-ai"
-GITHUB_REPO     = "lildebil0/dpi-detector"
+CURRENT_VERSION = "3.4.0-ai-zapret"
+GITHUB_REPO     = "lildebil0/full-dpi-checker"
 
 DOMAINS         = load_domains()
 TCP_16_20_ITEMS = load_tcp_targets()
