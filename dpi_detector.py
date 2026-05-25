@@ -1,5 +1,4 @@
 from typing import Optional, List, Dict
-from core.telegram_scanner import _fmt_speed as _tg_fmt, _fmt_size as _tg_size
 import asyncio
 import os
 import sys
@@ -8,6 +7,23 @@ import warnings
 import httpx
 import signal
 import argparse
+
+# Force UTF-8 stdout on Windows — fixes cp1251 UnicodeEncodeError
+# для русского текста + ═══/✓/✗ символов в выводе rich/console.
+if sys.platform == "win32":
+    if hasattr(sys.stdout, "reconfigure"):
+        try:
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+    # Также установим code page консоли в UTF-8 (65001)
+    try:
+        os.system("chcp 65001 > nul")
+    except Exception:
+        pass
+
+from core.telegram_scanner import _fmt_speed as _tg_fmt, _fmt_size as _tg_size
 
 warnings.filterwarnings("ignore")
 
