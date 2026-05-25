@@ -1,0 +1,104 @@
+# ============================================================
+# AI / LLM сервисы — domain list для теста 8
+# Формат: один домен на строку, # — комментарий
+# Источник: лидеры рынка по состоянию 2026-05
+# ============================================================
+
+# === Anthropic (Claude) ===
+claude.ai
+console.anthropic.com
+api.anthropic.com
+anthropic.com
+docs.anthropic.com
+status.anthropic.com
+
+# === OpenAI (ChatGPT) ===
+chatgpt.com
+chat.openai.com
+api.openai.com
+platform.openai.com
+auth.openai.com
+oaistatic.com
+oaiusercontent.com
+sora.com
+
+# === Google AI (Gemini / AI Studio / Vertex) ===
+gemini.google.com
+aistudio.google.com
+generativelanguage.googleapis.com
+notebooklm.google.com
+
+# === Microsoft Copilot ===
+copilot.microsoft.com
+m365.cloud.microsoft
+declarativeagents.microsoft.com
+
+# === xAI (Grok) ===
+grok.com
+x.ai
+api.x.ai
+
+# === DeepSeek ===
+chat.deepseek.com
+api.deepseek.com
+deepseek.com
+
+# === Mistral / Cohere / Perplexity / others ===
+mistral.ai
+api.mistral.ai
+chat.mistral.ai
+cohere.com
+api.cohere.com
+perplexity.ai
+www.perplexity.ai
+api.perplexity.ai
+
+# === AI Coding Agents / IDEs ===
+cursor.com
+api.cursor.sh
+windsurf.com
+codeium.com
+api.codeium.com
+api.githubcopilot.com
+copilot.github.com
+
+# === Inference providers / proxies ===
+openrouter.ai
+api.openrouter.ai
+groq.com
+api.groq.com
+together.ai
+api.together.xyz
+fireworks.ai
+api.fireworks.ai
+replicate.com
+api.replicate.com
+
+# === Open model hubs ===
+huggingface.co
+hf.co
+cdn-lfs.huggingface.co
+ollama.com
+api.ollama.com
+modelscope.cn
+
+# === AI image / video / voice ===
+midjourney.com
+www.midjourney.com
+runwayml.com
+api.runwayml.com
+api.stability.ai
+elevenlabs.io
+api.elevenlabs.io
+api.deepgram.com
+
+# === Vector DBs / RAG infra (часто Cloudflare-fronted) ===
+api.pinecone.io
+api.qdrant.tech
+weaviate.io
+
+# === Воркфлоу / Agents платформы ===
+langfuse.com
+api.langfuse.com
+n8n.cloud
+zapier.com

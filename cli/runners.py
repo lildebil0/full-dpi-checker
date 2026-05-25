@@ -264,12 +264,22 @@ async def run_domains_test(semaphore: asyncio.Semaphore, stub_ips: set, domains:
             console.print("Linux: [dim]sudo resolvectl flush-caches[/dim]\n")
 
     block_markers = ("TLS DPI", "TLS MITM", "TLS BLOCK", "ISP PAGE", "BLOCKED", "TCP RST", "TCP ABORT")
+    # Build list of problem entries (blocked or timeout) for zapret2 suggester
+    problem_entries = []
+    for e in entries:
+        row = build_domain_row(e)
+        details = " ".join(str(c) for c in row[1:4])
+        is_blocked = any(m in details for m in block_markers)
+        is_timeout = "TIMEOUT" in details
+        if is_blocked or is_timeout:
+            problem_entries.append(e)
     return {
         "total":    len(domains),
         "ok":       sum(1 for r in rows if "OK" in r[3] or "OK" in r[2]),
         "blocked":  sum(1 for r in rows if any(m in r[c] for c in (1,2,3) for m in block_markers)),
         "timeout":  sum(1 for r in rows if "TIMEOUT" in r[3] or "TIMEOUT" in r[2]),
         "dns_fail": sum(1 for r in rows if "DNS FAIL" in r[3]),
+        "problem_entries": problem_entries,  # для zapret2 suggester
     }
 
 

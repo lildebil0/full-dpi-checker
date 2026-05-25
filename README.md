@@ -18,6 +18,7 @@
 
 ## 🎯 Возможности
 
+- **🤖 AI / LLM сервисы (тест 8 — новое в форке `lildebil0/dpi-detector`)** — проверка доступности Claude / ChatGPT / Gemini / Copilot / Grok / DeepSeek / Mistral / Cohere / Perplexity / Cursor / OpenRouter / HuggingFace / Replicate / ElevenLabs / Midjourney и др. (~70 доменов в `domains_ai.txt`). Запуск: `python dpi_detector.py -t 8` или `python dpi_detector.py -t 18` (DNS + AI).
 - **TCP 16-20KB блокировка** — обнаруживает обрыв соединения к CDN и хостингам после передачи 14-34KB
 - **Подбор белых SNI для AS хостингов/CDN**
 - **Проверка доступности заблокированных сайтов** — тестирует TLS 1.2, TLS 1.3 и HTTP
@@ -26,6 +27,36 @@
   Handshake/Read Timeout, TLS MITM, SNI-блокировку и другие
 - **Гибкая настройка** — таймауты, потоки, свои списки доменов, DNS-серверы
   и IPv4-only режим
+
+## 🤖 AI / LLM проверка — fork-specific
+
+Forк `lildebil0/dpi-detector` добавляет **тест 8** — куратированный список AI-сервисов
+для быстрой проверки, какие нейросети блокируются твоим провайдером.
+
+```bash
+# только AI проверка
+python dpi_detector.py -t 8
+
+# DNS + AI (типичный flow для диагностики)
+python dpi_detector.py -t 18
+
+# полный набор включая AI
+python dpi_detector.py -t 12348
+```
+
+**Что входит в `domains_ai.txt`:**
+
+| Категория | Сервисы |
+|---|---|
+| LLM chat | Claude, ChatGPT, Gemini, Copilot, Grok, DeepSeek, Mistral, Cohere, Perplexity |
+| AI-coding | Cursor, Windsurf, Codeium, GitHub Copilot |
+| Inference providers | OpenRouter, Groq, Together, Fireworks, Replicate |
+| Open hubs | HuggingFace, Ollama, ModelScope |
+| Image/video/voice | Midjourney, Runway, Stability, ElevenLabs, Deepgram |
+| Vector DB | Pinecone, Qdrant, Weaviate |
+
+Свои домены можно добавить — просто отредактируй `domains_ai.txt`, формат
+такой же как у обычного `domains.txt`.
 
 > [!WARNING]  
 > Если у вас запущены средства обхода блокировок (например, zapret или GoodbyeDPI), результаты тестов будут искажены. Чтобы узнать реальное состояние фильтров вашего провайдера, выключите их перед началом проверки или убедитесь, что они работают в режиме обработки всех пакетов (режим ALL), а не только по списку.

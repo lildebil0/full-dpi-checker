@@ -49,9 +49,9 @@ def build_domain_row(entry: dict) -> list:
 
 
 async def ask_test_selection() -> str:
-    # Алгоритмически строим все непустые подмножества цифр 1–7
+    # Алгоритмически строим все непустые подмножества цифр 1–8
     from itertools import combinations
-    digits = "1234567"
+    digits = "12345678"
     valid = {
         "".join(sorted(combo))
         for r in range(1, len(digits) + 1)
@@ -66,6 +66,7 @@ async def ask_test_selection() -> str:
         "  [cyan]5[/cyan]    — Поиск белых SNI для ASN\n"
         "  [cyan]6[/cyan]    — Проверка Telegram (замедление/блокировка)\n"
         "  [cyan]7[/cyan]    — Легенда статусов\n"
+        "  [magenta]8[/magenta]    — [bold]Проверка AI/LLM сервисов[/bold] (Claude/ChatGPT/Gemini/Copilot/Grok/DeepSeek/...)\n"
         "  [cyan]123[/cyan] — [dim](по умолчанию)[/dim]"
     )
     loop = asyncio.get_running_loop()

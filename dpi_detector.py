@@ -27,14 +27,16 @@ from core.dns_scanner import (
     check_dns_availability,
     collect_stub_ips_silently,
 )
-from utils.files import load_domains, load_tcp_targets, load_whitelist_sni, get_base_dir
+from utils.files import load_domains, load_tcp_targets, load_whitelist_sni, load_ai_domains, get_base_dir
+from utils.zapret_suggester import classify_block_severity, render_suggestion, generate_test_script
 
-CURRENT_VERSION = "3.3.0"
-GITHUB_REPO     = "Runnin4ik/dpi-detector"
+CURRENT_VERSION = "3.3.0-ai"
+GITHUB_REPO     = "lildebil0/dpi-detector"
 
 DOMAINS         = load_domains()
 TCP_16_20_ITEMS = load_tcp_targets()
 WHITELIST_SNI   = load_whitelist_sni()
+AI_DOMAINS      = load_ai_domains()
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -47,6 +49,9 @@ def parse_arguments():
     parser.add_argument("-d", "--domain",      type=str, action="append", help="Проверить конкретный домен(ы), игнорируя domains.txt.\nМожно указывать несколько раз: -d vk.com -d ya.ru")
     parser.add_argument("-o", "--output",      type=str, help="Путь для автосохранения отчета (например: report.txt).")
     parser.add_argument("--batch",             action="store_true", help="Отключает паузы и вопросы")
+    parser.add_argument("--gen-zapret",        action="store_true",
+                        help="Генерирует zapret2_test.bat (Windows) / zapret2_test.sh (Linux) "
+                             "для перебора bypass-стратегий против заблокированных доменов")
     return parser.parse_args()
 
 
@@ -106,6 +111,8 @@ def _format_summary(
     telegram_stats=None,
     doh_unavailable: bool = False,
     dns_avail_stats=None,
+    run_ai: bool = False,
+    ai_stats=None,
 ) -> List[str]:
     lines = []
 
@@ -165,6 +172,24 @@ def _format_summary(
             + f"  [dim]({pct}% ОК)[/dim]"
         )
         lines.append(line)
+
+    # ── Тест 8: AI/LLM ────────────────────────────────────────────────────────
+    if ai_stats:
+        a = ai_stats
+        pct = int(a["ok"] / a["total"] * 100) if a["total"] else 0
+        line = (
+            f"[bold magenta]AI/LLM сервисы[/bold magenta]   "
+            f"[green]√ {a['ok']}/{a['total']} OK[/green]"
+            + (f"  [red]× {a['blocked']} блок.[/red]" if a['blocked'] else "")
+            + (f"  [yellow]⏱ {a['timeout']} таймаут[/yellow]" if a['timeout'] else "")
+            + f"  [dim]({pct}% ОК)[/dim]"
+        )
+        lines.append(line)
+        if a.get("blocked", 0) > 0 or a.get("timeout", 0) > 0:
+            lines.append(
+                "  [dim]Совет: используй VPN/Tor/WireGuard если AI-сервисы блокируются. "
+                "См. README → 'AI/LLM bypass'.[/dim]"
+            )
 
     # ── Тест 4: TCP 16-20KB ───────────────────────────────────────────────────
     if tcp_stats:
@@ -259,8 +284,9 @@ async def main():
     run_wl_sni    = "5" in selection   # Тест 5: белые SNI для ASN
     run_telegram  = "6" in selection   # Тест 6: Telegram
     run_legend    = "7" in selection   # Тест 7: Легенда
+    run_ai        = "8" in selection   # Тест 8: AI/LLM сервисы (Claude/ChatGPT/Gemini/...)
     only_legend   = run_legend and not any([
-        run_dns, run_dns_avail, run_domains, run_tcp, run_wl_sni, run_telegram
+        run_dns, run_dns_avail, run_domains, run_tcp, run_wl_sni, run_telegram, run_ai
     ])
 
     if only_legend:
@@ -299,7 +325,7 @@ async def main():
 
         if run_dns:
             stub_ips, dns_intercept_count, doh_unavailable = await check_dns_integrity()
-        elif run_domains or run_tcp:
+        elif run_domains or run_tcp or run_ai:
             try:
                 stub_ips = await asyncio.wait_for(
                     collect_stub_ips_silently(),
@@ -335,6 +361,25 @@ async def main():
         if run_telegram:
             telegram_stats = await run_telegram_test(semaphore)
 
+        # ── Тест 8: AI/LLM сервисы ────────────────────────────────────────────
+        ai_stats = None
+        if run_ai:
+            if AI_DOMAINS:
+                console.print(
+                    "\n[bold magenta]═══ Проверка AI/LLM сервисов "
+                    f"({len(AI_DOMAINS)} доменов) ═══[/bold magenta]"
+                )
+                console.print(
+                    "[dim]Anthropic / OpenAI / Google AI / Microsoft Copilot / xAI / "
+                    "DeepSeek / Mistral / Cohere / Perplexity / Cursor / OpenRouter / "
+                    "HuggingFace / Replicate / ElevenLabs / Midjourney и др.[/dim]\n"
+                )
+                ai_stats = await run_domains_test(semaphore, stub_ips, AI_DOMAINS)
+            else:
+                console.print(
+                    "[yellow]Файл domains_ai.txt пуст или не найден — тест 8 пропущен.[/yellow]"
+                )
+
         # ── Итоговая сводка ───────────────────────────────────────────────────
         console.print()
         summary_lines = _format_summary(
@@ -349,6 +394,8 @@ async def main():
             telegram_stats=telegram_stats,
             doh_unavailable=doh_unavailable,
             dns_avail_stats=dns_avail_stats,
+            run_ai=run_ai,
+            ai_stats=ai_stats,
         )
         console.print(Panel(
             "\n".join(summary_lines),
@@ -357,6 +404,34 @@ async def main():
             padding=(0, 1),
             expand=False,
         ))
+
+        # ── zapret2 bypass suggestion для всех найденных blocks ───────────────
+        all_problem_entries = []
+        for stats in (domain_stats, ai_stats):
+            if stats and stats.get("problem_entries"):
+                all_problem_entries.extend(stats["problem_entries"])
+
+        if all_problem_entries:
+            zapret_ok_domains, ip_only_domains = classify_block_severity(all_problem_entries)
+            suggestion_lines = render_suggestion(zapret_ok_domains, ip_only_domains)
+            if suggestion_lines:
+                for line in suggestion_lines:
+                    console.print(line)
+
+            if args.gen_zapret and zapret_ok_domains:
+                from pathlib import Path
+                script_path = generate_test_script(
+                    zapret_ok_domains, Path(get_base_dir())
+                )
+                if script_path:
+                    console.print(
+                        f"\n[bold green]✓ Сгенерирован тестовый скрипт:[/bold green] "
+                        f"[cyan]{script_path}[/cyan]"
+                    )
+                    console.print(
+                        "[dim]  Запусти после загрузки zapret2 — он переберёт стратегии "
+                        "против заблокированных доменов.[/dim]"
+                    )
 
         console.print("\n[bold green]Проверка завершена.[/bold green]")
 
