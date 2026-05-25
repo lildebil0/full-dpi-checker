@@ -72,8 +72,9 @@ def classify_block_severity(
       - HTTP injection
 
     zapret2 CANNOT bypass:
-      - TCP TIMEOUT to direct IP (route-level filter)
-      - DNS FAKE (handled by DoH, not zapret2)
+      - TCP SYN DROP / TIMEOUT to direct IP (route-level filter / IP blacklist)
+      - REFUSED (server-side / firewall ECONNREFUSED)
+      - DNS FAIL / DNS FAKE (handled by DoH, not zapret2)
       - NET UNREACH / HOST UNREACH (no route)
     """
     zapret_ok: List[str] = []
@@ -94,15 +95,18 @@ def classify_block_severity(
             )
         ).upper()
 
-        # IP-level: only TIMEOUT without TLS-error or RST tagging
-        if "TIMEOUT" in details and not any(
-            tag in details for tag in ("TLS", "RST", "ABORT", "MITM", "SNI", "BLOCK", "FAKE")
-        ):
+        # IP-level / route-level / DNS-level — zapret2 не поможет
+        ip_level_markers = ("SYN DROP", "REFUSED", "NET UNREACH", "HOST UNREACH",
+                            "DNS FAIL", "DNS FAKE", "ISP PAGE")
+        if any(tag in details for tag in ip_level_markers):
             ip_only.append(domain)
-        elif any(tag in details for tag in ("DNS FAKE", "ISP PAGE")):
-            # DNS-level — zapret won't help, but worth noting
+        elif "TIMEOUT" in details and not any(
+            tag in details for tag in ("TLS", "RST", "ABORT", "MITM", "SNI", "BLOCK")
+        ):
+            # Чистый TCP timeout без TLS-context = тоже IP-level
             ip_only.append(domain)
         else:
+            # TLS DPI / SNI block / RST / ABORT / TLS BLOCK / 16-20KB drop — zapret2 шанс есть
             zapret_ok.append(domain)
     return zapret_ok, ip_only
 
