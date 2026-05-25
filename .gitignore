@@ -13,5 +13,6 @@ __pycache__/
 Thumbs.db
 
 dpi_detector.spec
+*.spec
 build/
 dist/
